@@ -1,0 +1,6 @@
+- Evaluation Expression, 表达式求值,alt+f8
+- 条件断点: 右键断点, Condition中填入类似s.equals("xxx")
+- 日志断点:  断点属性设置suspent为false, log message中填入要输出的日志信息.
+- 方法断点: 直接断点在方法那一行.
+- 异常断点: Run->View BreakPoints->Java Exception Breakpoints, 然后选择感兴趣的异常.
+- Field WatchPoint:属性断点: 直接在属性那一行断点, 邮件可以设置watch的时机.
