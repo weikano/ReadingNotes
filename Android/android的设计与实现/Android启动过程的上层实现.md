@@ -40,7 +40,7 @@ service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-sys
 
 ### SystemServer.main
 
-> SystemServer.run->System.loadLibrary("android_servers")，注册SystemServiceManager，startBootstrapService，startCoreServices，startOtherServices
+> SystemServer.run->System.loadLibrary("android_servers")，createSystemContext启动ActivityThread(), 注册SystemServiceManager，startBootstrapService，startCoreServices，startOtherServices
 > 启动服务都是通过SystemServiceManager.startService方法：通过constructor反射生成SystemService对象，然后添加至mServices中，再调用onStart方法
 
 ### SystemServer.startBootstrapService
