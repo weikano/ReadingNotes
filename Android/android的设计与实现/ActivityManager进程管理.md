@@ -49,3 +49,8 @@
 >回到updateOomAdjLocked中，根据app.curProcState以及某些条件来确定是否需要kill掉当前app
 >
 >接下来回到updateOomAdjLocked中，调用ActivityThread.scheduleTrimMemory通知应用程序释放内存，调用ActivityStackSupervisor.scheduleDestroyAllActivities
+
+### LowMemoryKiller机制
+> 源码位于kernel/drivers/staging/android/lowmsemorykiller.c中，其中OOM adj等级由/sys/module/lowmemorykiller/parameters/adj文件指定，最小内存阈值由/sys/module/lowmemorykiller/parameters/minfree文件指定
+>
+>ProcessList构造函数中会调用updateOomLevels去更新对应的值
