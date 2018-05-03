@@ -1,6 +1,6 @@
 ### 4.2 对TCP性能的考虑
 #### 4.2.1 HTTP事务的时延
-> ![image](1)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/1.png)
 > 1. DNS解析
 > 2. TCP连接建立需要3次握手
 > 3. 客户端发送请求、服务器读取请求并处理
@@ -14,7 +14,7 @@
 > 5. TIME_AWAIT时延和端口耗尽
 
 #### 4.2.3 TCP连接的握手时延
-> ![image](2)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/2.png)
 > 1. 请求新的TCP连接时，客户端向服务器发送一个小的TCP分组（40~60字节）。设置了一个特殊的SYN标志，表明这是一个连接请求
 > 2. 服务器接受了连接，就会对一些连接参数进行计算，并向客户端返回一个TCP分组，其中SYN和ACK标记会被置位，说明连接请求已被接受
 > 3. 客户端向服务器回送一条确认消息，通知它连接已成功建立
@@ -58,7 +58,7 @@
 
 ### 4.4. 并行连接
 #### 4.4.1 并行连接可能会提高页面的加载速度
-> ![image](3)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/3.png)
 #### 4.4.2 并行连接不一定更快
 > - 客户端带宽。如果并行加载多个对象，每个对象都会去竞争有限的带宽，每个对象都会以较慢的速度按比例加载，这样性能提升就很小。
 > - 大量连接会消耗很多内存资源。
@@ -94,7 +94,7 @@
 > - 只有当连接上所有的报文都有正确的自定义的报文长度时（Content-Length），连接才能持久保持
 
 ### 4.6 管道化连接
-> ![image](4)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/4.png)
 > 管道化连接的限制：
 > - 必须支持持久化
 > - 必须按照与请求相同的顺序返回HTTP响应，应为HTTP报文中没有序列号，如果失序就没法将请求与响应匹配起来

@@ -1,10 +1,10 @@
 ### 12.1 认证
 #### 12.1.1 HTTP的质询/响应认证框架
 #### 12.1.2 认证协议与首部
-> ![image](6)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/6.png)
 
 ### 12.2 基本认证
-> ![image](7)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/7.png)
 
 ### 12.3 基本认证的安全缺陷
 > - 用户名密码很容易解码

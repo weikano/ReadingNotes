@@ -17,4 +17,4 @@
 
 #### 7.9.5 试探性过期
 #### 7.9.6 客户端的新鲜度限制
-> ![image](5)
+> ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/HTTP-Guide/5.png)
