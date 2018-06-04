@@ -2,7 +2,7 @@
 #### 12.3.1 二进制分帧层
 > ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/WEB-Guide/6.png)
 >
-> HTTP 1.x以换行符作为纯文本的分隔符，二HTTP 2.0将所有传输的信息分割为更小的消息和帧，并对它们采用二进制格式的编码
+> HTTP 1.x以换行符作为纯文本的分隔符，而HTTP 2.0将所有传输的信息分割为更小的消息和帧，并对它们采用二进制格式的编码
 
 #### 12.3.2 流、消息和帧
 > - 流：已建立连接上的双向字节流
