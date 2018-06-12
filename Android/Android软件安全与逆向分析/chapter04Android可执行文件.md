@@ -7,11 +7,11 @@
 6. 签名。使用jarsigner或者build/tools/signapk目录下的signapk工具
 7. 对齐处理。使用sdk/tools/zipalign，源码位于build/tools/zipalign目录。验证是否对齐过由ZipAlign.cpp文件的verify完成，对齐工作由process完成。
 
-[image](001.png)
+![image](https://raw.githubusercontent.com/weikano/NoteResources/master/Android%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E4%B8%8E%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/001.png)
 
 ### 4.2 安装流程
 > 最终都会调用PMS的scanPackageLI方法，然后调用mInstaller.install方法来安装程序，Installer通过socket向/system/bin/installd发送install指令（frameworks/base/cmds/installd），由installd.c中的do_install方法最终调用install，后者在commands.c中有它的实现代码。
 
 ### 4.3 dex文件格式
 > dex文件的结构声明在dalvik/libdex/DexFile.h中
-[image](002.png)
+![image](https://raw.githubusercontent.com/weikano/NoteResources/master/Android%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E4%B8%8E%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/002.png)

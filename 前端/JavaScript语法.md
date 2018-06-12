@@ -60,3 +60,19 @@ for(var proname in myCar) {
     alert(proname+" has value " + myCar[proname]);
 }
 ```
+
+#### 5. 一些技巧
+1. window.onload加载多个函数
+```javascript
+function addLoadEvent(func) {
+    var oldonload = window.onload;
+    if(typeof oldonload != 'function') {
+        window.onload = func;
+    }else{
+        window.onload = function {
+            oldonload();
+            func();
+        }
+    }
+}
+```
