@@ -193,6 +193,58 @@
   };
   ```
 
-- flat_binder_object：
+- flat_binder_object：除了可以描述一个Binder实体对象和一个Binder引用对象外，还可以用来描述一个文件描述符，通过type来区分
 
-- 
+  ```c++
+  struct flat_binder_object {
+    unsigned long type;
+    unsigned long flags;
+    union {
+      void* binder;//指向Binder实体对象对应的一个service组件内部的weakref_impl, cookie保存该Service组件的地址
+      signed long handle;//Binder引用对象的句柄
+    };
+    void* cookie;
+  };
+  ```
+
+##### 5.1.2 Binder设备的初始化过程
+
+```c++
+//kernel/goldfish/drivers/staging/android/binder.c
+static int _init binder_init(void) {
+  //创建/proc/binder/proc目录，以pid命名，通过他们读取各个进程的Binder线程池、Binder实体对象、Binder引用对象以及内部缓冲区等信息
+  //省略其他不重要代码
+  proc_mkdir("binder",NULL);
+  proc_mkdir("proc",binder_proc_dir_entry_root);
+  //注册Binder设备，创建/dev/binder设备文件，文件操作方法由binder_fops指定(binder_open, binder_mmap, binder_ioctl)
+  misc_register(&binder_entry_root);
+  //接下来在/proc/binder目录下创建state、stats、transactions、transactions_log、failed_transactions_log5个文件，读取Binder驱动程序的运行状况
+}
+```
+
+##### 5.1.3 Binder设备文件的打开过程
+
+首先调用函数open获取/dev/binder的文件描述符
+
+```c++
+static int binder_open(struct inode* nodp, struct file* filep){
+  //初始化binder_proc
+  filep->private_data = proc;
+  //在/proc/binder/proc目录下创建一个以pid问名称的只读文件，binder_read_proc_proc为它的内容读取函数
+  create_proc-read_entry(xxx,xxx,xxx,binder_read_proc_proc, proc);
+}
+```
+
+##### 5.1.4 Binder设备文件的内存映射过程
+
+```c++
+static int binder_mmap(struct file* filep, struct wv_area_struct* vma){
+  //vma描述一段虚拟内存空间
+  //vm_area_struct用户地址空间, vm_struct系统地址空间
+  //Binder驱动程序最多可以为进程分配4M内核缓冲区用来传输进程间的数据
+  if((vma->vm_end - vma->vm_start)> 4M) {
+    vma->vm_end = vma->vm_start + 4M;
+  }
+}
+```
+
