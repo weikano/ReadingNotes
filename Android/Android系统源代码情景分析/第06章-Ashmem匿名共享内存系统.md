@@ -138,5 +138,23 @@ MemoryBase类内部有一个类型位IMemoryHeap的强指针mHeap，指向Memory
 
 native层代码在frameworks/base/core/jni/android_os_MemoryFile.cpp。通过SharedMemory.nCreate方法创建一个ashmem，native层代码在frameworks/base/core/jni/android_os_SharedMemory.cpp
 
-#### 6.5 ashmem的原理
+#### 6.5 ashmem的共享原理
+
+每块ashmem都是通过一个文件描述符来描述的，文件描述符是通过打开设备文件/dev/ashmem获得。文件描述符只是一个整数，只在进程范围内有效。每个文件描述符都对应有一个文件结构体（struct file）。不同的文件描述符可以对应同一个文件结构体。当应用程序调用函数open打开文件时，就会创建一个struct file和fd。
+
+ashmem能够在两个不同进程中共享的原因就在于，不同进程分别有一个fd指向同一个struct file。而这个struct file又指向同一个ashmem。
+
+```c++
+//drivers/goldfish/android/binder.c
+static void binder_transaction(struct binder_proc* proc, struct binder_thread* thread, struct binder_transaction_data* tr, int reply) {
+  //省略
+  //获得一个未使用的fd
+  target_fd = task_get_unused_fd_flags(target_proc, 0_CLOEXEC);
+  fput(file);
+  //将fd跟file关联起来
+  task_fd_install(target_proc, target_fd, file);
+  //讲flat_binder_object的handle值设置为target_fd以返回给client
+	fp->handle = target_fd;
+}
+```
 
