@@ -24,6 +24,28 @@ fun onBindViewHolder(holder:ViewHolder, position:Int) {
 }
 ```
 
+RecyclerView中可以使用RecyclerViewPreloader，在用户滑动时自动加载稍微超前一些的图片
+
+```kotlin
+//固定图片加载尺寸
+private val sizeProvider = FixedPreloadSizeProvider(imageWidthPixels, imageHeightPixels)
+//创建PreloadModelProvider
+private inner class MyPreloadModelProvider : PreloadModelProvider {
+  private val urls = arrayOf<String>(xxx,xx)
+  override fun getPreloadItems(position:Int) : Array<String> {
+    val url = urls[position]
+    return Collections.singletonList(url)
+  }
+  override fun getPreloadRequestBuilder(url:String) {
+    return GlideApp.with(fragment).load(url).override(imageWidth, imageHeight)
+  }
+}
+val preloader = RecyclerViewPreloader<Photo>(Glide.with(this), MyPreloadModelProvider(), 10 /*maxPreload*/)
+recyclerview.addOnScrollListener(preloader)
+```
+
+
+
 #### 三、尺寸
 
 Glide通过ViewTarget.getSize方法获取尺寸。逻辑如下：
@@ -157,3 +179,63 @@ Transformation是无状态的，因此尽量采用单例来实现。
 ##### 缓存键（Cache Keys）
 
 所有缓存键都至少包含两个元素：请求加载的Model（File,Url,URI）和一个可选的签名（Signature）。步骤1~3的缓存键还包含其他数据：宽高、可选的变换、额外添加的选项以及请求的数据类型（Bitmap、Gif或其他）
+
+##### 缓存的刷新
+
+磁盘缓存使用的是hash键，所以并没有一个好的方式来简单删除某个特定URL或者文件对应的所有缓存文件。如果只允许加载或者缓存原始图片的话，可能会简单一点，但是glide还会缓存缩略图和提供多种transformation，它们中的任何一个都会导致在缓存中创建一个新的文件。
+
+是缓存文物无效的最佳方式是在内容变化时改变标识符。因为通常改变标识符（比如URL，文件路径）比较困难，所以glide通过签名API来混合额外数据到你的缓存键中。Signature适用于媒体内容，也适用于一些版本元数据。
+
+- MediaStore内容：对于媒体存储内容，可以使用Glide的MediaStoreSignature类作为签名。它允许你混入修改时间、mime类型以及item的方向到缓存键中。
+- 文件：使用ObjectKey混入文件的修改日期
+- URI：使用ObjectKey混入任意数据（比如版本号）
+
+```kotlin
+Glide.with(fragment).load(model).signature(ObjectKey(versionData)).into(imageView)
+```
+
+也可以定义自己的签名，只要实现Key接口就好。确保正确的实现equals、hashCode和updateDiskCacheKey方法
+
+#### 九、资源重用
+
+Glide中包含很多东西，比如Bitmap、byte[]、int[]以及大量的POJO
+
+##### Dalvik
+
+- GC_CONCURRENT：对于每次收集都会阻塞5ms，少于一帧，通常不会造成丢帧
+- GC_FOR_ALLOC：stop-the-world，可能会阻塞主线程125ms以上
+
+##### Glide如何追踪和重用资源
+
+###### 引用计数
+
+glide为每个资源保持了一个引用计数
+
+###### 增加引用计数
+
+每次调用into来加载一个资源，这个资源的引用计数增加一
+
+###### 减少引用计数
+
+1. 在target上调用clear
+2. 在target上调用另一个资源的into方法
+
+###### 释放资源
+
+引用计数到0时，资源会被释放给glide重用。因此下列行为是不安全的：
+
+1. 使用getImageDrawable来取回ImageView加载的bitmap或drawable，并使用某种方式展示它。
+2. 使用SImpleTarget来将一个资源加载到View，但是没有实现onLoadCleared方法并在其中将资源从View移除
+3. 对Glide加载的任何Bitmap调用recycle方法
+
+##### 池化
+
+对于bitmap，glide提供了一个BitmapPool接口，允许Resource获取和重用bitmap对象。
+
+```kotlin
+Glide.get(context).bitmapPool
+```
+
+任何定制的BitmapTransformation从BitmapPool中创建、但没有从transform中返回的中间Bitmap，都会返回BitmapPool或被回收，但不会两种情况同时发生。
+
+你永远都不应该recycle从Glide中创建的Bitmap
