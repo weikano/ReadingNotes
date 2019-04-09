@@ -497,5 +497,38 @@ public StartingSurface addSplashScreen() {
 
 ##### 10.7.2 启动窗口的销毁
 
+一旦应用程序的主窗口显示出来，启动窗口就会销毁
+
+AppWindowContainerController.removeStartingWindow()<-ActivityRecord.removeOrphanedStaringWindow()<-ActivityStack.cancelInitializingActivities()<-AcfivityStackSupervisor.cancelInitializingActivities()<-ActivityStack.resumeTopActivityInnerLocked()
+
+```java
+//SplashScreenSurface.java
+public void remove() {
+  wm.remove(mView);
+}
+```
+
+#### 10.8 窗口动画
+
+窗口动画并不需要创建额外的window
+
+##### 10.8.1 窗口动画类型
+
+- WindowStateAnimator：WMS记录所有窗口的WindowState，启动WindowState.mWinAnimator是一个WIndowStateAnimator。可以由开发人员自定义
+- ScreenRotationAnimation：屏幕旋转动画
+- SurfaceAnimator：Android 8.0中被移除
+
+##### 10.8.2 动画流程跟踪-WindowStateAnimator
+
+- 首先获取对应的动画id：statusbar和navigationbar的进入退出动画和普通窗口有差别，通过selectAnimationLw来选择对应的动画资源id；否则先通过transit的类型来获取对应的属性id，再进一步选择实际的动画效果id值
+- 加载动画：
+- 设置动画：apllyAnimationLocked随后会通过setAnimation来设置一个ANimation对象到WindowStateAnimator中
+
+##### 10.8.3 AppWindowAnimator
+
+##### 10.8.4 动画的执行过程
+
+
+
 
 
