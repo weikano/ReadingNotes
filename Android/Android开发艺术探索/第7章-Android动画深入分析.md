@@ -65,8 +65,8 @@ public void finish() {
 }
 ```
 **overridePendingTransition必须位于start和finish方法后面, 否则无效.**  
-  
-  
+
+
 Fragment也可以通过setCustomAnimations方法添加动画.  
 
 # 属性动画
@@ -115,7 +115,7 @@ private class ButtonWidthWrapper {
         return button.getLayoutParams().width;
     }
 }
-```  
+```
 第3种方案代码如下:
 
 ```
@@ -144,7 +144,7 @@ ValueAnimator.start() -> AnimationHandler.start() -> ValueAnimator.doAnimationFr
 2. 内存泄漏
 > 在属性动画中有一类无线循环的动画, 这类动画要在Activity退出时及时停止. View动画不存在此问题.
 3. 兼容性问题
-> 3.0之下 属性动画.
+> 3.0之下属性动画.
 4. View动画的问题
 > 有时候会出现动画完成后View无法隐藏, 此时只需要调用clearAnimation()即可解决. 
 5. 不用使用px

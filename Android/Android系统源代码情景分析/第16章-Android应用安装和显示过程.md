@@ -6,9 +6,7 @@ android系统启动的最后一步是启动一个home应用。
 
 #### 16.1 应用程序的安装过程
 
-SystemServer在startBootstrapServices中会调用PackageManagerService.main方法创建一个PMS，在startOtherServices中会调用updatePackagesIfNeeded和systemReady。PMS在构造函数中会调用scanDirTracedLI函数扫描/vendor/overlay、/product/overlay、/ANDROID_ROOT/system/framework、/ANDROID_ROOT/priv-app
-
-、/VENDOR_ROOT/vendor/priv-app、/VERDOR_ROOT/vendor/app、/ODM_ROOT/odm、/ODM/odm/app、/OEM_ROOT/oem/app、/PRODUCT_ROOT/product/priv-app以及/PRODUCT_ROOT/product/app目录。
+SystemServer在startBootstrapServices中会调用PackageManagerService.main方法创建一个PMS，在startOtherServices中会调用updatePackagesIfNeeded和systemReady。PMS在构造函数中会调用scanDirTracedLI函数扫描/vendor/overlay、/product/overlay、/ANDROID_ROOT/system/framework、/ANDROID_ROOT/priv-app、/VENDOR_ROOT/vendor/priv-app、/VERDOR_ROOT/vendor/app、/ODM_ROOT/odm、/ODM/odm/app、/OEM_ROOT/oem/app、/PRODUCT_ROOT/product/priv-app以及/PRODUCT_ROOT/product/app目录。
 
 scanDirTracedLI函数最终会调用scanDirLI
 

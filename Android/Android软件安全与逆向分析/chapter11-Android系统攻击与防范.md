@@ -10,7 +10,7 @@
 > - 劫持：通常是判断前台运行的进程，符合条件的话就拉起一个伪装的Activity
 
 #### 11.4.2 BroadcastReceiver安全
-> 有序广播因为是根据优先级的，所以优先级高的，还可以更改广播的内容或者终止；无需广播无法通过abortBroadcast来终止。解决方法是在intent中设置指定的组件的类
+> 有序广播因为是根据优先级的，所以优先级高的，还可以更改广播的内容或者终止；无序广播无法通过abortBroadcast来终止。解决方法是在intent中设置指定的组件的类
 ```java
 intent.setClass(context, TargetReceiver.class);
 ```

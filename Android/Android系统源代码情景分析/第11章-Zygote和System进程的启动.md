@@ -88,7 +88,7 @@ public static void main(String[] args) {
   Runnable r = forkSystemServer(abiList, socketName, zygoteServer);
   r.run();
   //循环接收命令，最后会触发ZygoteConnection.processOneCommand方法来fork出app对应的进程，比如在AMS启动activity时会通过Process.start方法创建新的进程，最终还是通过触发到这里来真正的创建新进程
-  Runnable caller = zygoteServer.sunSelectLoop(abiList);
+  Runnable caller = zygoteServer.runSelectLoop(abiList);
   caller.run();
 }
 

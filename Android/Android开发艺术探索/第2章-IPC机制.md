@@ -51,11 +51,11 @@
 
  5. 注意事项
  > 客户端调用远程服务的方法运行在服务器的Binder线程池中. 调用时客户端会挂起, 如果耗时较长会造成ANR, 所以要避免在UI线程中访问远程方法, 比如onServiceConnected和onServiceDisconnected都运行在UI线程中, 所以不可以在他们中调用.
- 
+
  6. 程序的健壮性
  > 1. 设置DeathRecipient, binderDied方法在客户端的Binder线程回调.
  > 2. onServiceDisconnected方法中重新连接服务
- 
+
  7. AIDL中的权限验证
  > 1. 使用自定义permission, 在服务的onBind方法中调用checkCallingOrSelfPermission(permission)来验证是否有权限,如果没有返回null.
  > 2. 在onTransact中验证permission, 还可以加入uid和pid相关的验证, 比如客户端包名限制等等. 
@@ -67,7 +67,7 @@
  3. ContentProvider通过Uri来区分外界要访问的内容, 需要用到UriMatcher来实现.
  4. 要观察ContentProvider中数据的变化,可以通过ContentResolver的registerContentObserver来注册观察者, 而对应的ContentProvider在数据变化时, 需要调用ContentResolver的notifyChange方法来通知数据变化. 
  5. query, update ,insert, delete四大方法是存在多线程访问的, 因此方法内部要做好线程同步. 
- 
+
 ## 使用Socket
 > ServerSocket和Socket实现
 
@@ -76,3 +76,4 @@
 
 # 选用合适的IPC方式
 ![image](https://raw.githubusercontent.com/weikano/NoteResources/master/589841f8ab64413b80002b38.png)
+

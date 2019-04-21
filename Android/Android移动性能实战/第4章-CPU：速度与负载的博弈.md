@@ -10,7 +10,7 @@ CPU问题无非分为以下三种：
 
 #### 4.2 工具集
 
-**TOP软件**
+**TOP**
 
 > 依靠adb shell top 就可以简单列出进程的各种信息，缺点是top本身的性能消耗就不低。
 >
@@ -20,7 +20,7 @@ CPU问题无非分为以下三种：
 >
 > 指定进程的CPU、内存消耗并设置刷新间隔：adb shell top -d 1 | grep com.kingsunedu.sdk.sample
 
-**PS软件**
+**PS**
 
 > adb shell ps --help 查看帮助
 
