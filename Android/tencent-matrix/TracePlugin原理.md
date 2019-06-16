@@ -2,25 +2,6 @@
 
 > TracePlugin通过AnrTracer、EvilMethodTracer、StartUpTracer、FrameTracer来监控系统performance
 
-```java
-//TracePlugin.java
-public void init() {
-  //调用AnrTracer、FrameTracer、EvilMethodTracer和StartupTracer的构造方法来初始化对应的field
-}
-public void start() {
-  Runnable runnable = ()->{
-    UIThreadMonitor.getMonitor().init(traceConfig);
-    AppMethodBeat.getInstance().onStart();
-    UIThreadMonitor.getMonitor().onStart();
-    anrTracer.onStartTrace();
-    frameTracer.onStartTrace();
-    evilMethodTracer.onStartTrace();
-    startupTracer.onStartTrace();
-  };
-  //主线程执行上面的runnable
-}
-```
-
 #### 实现细节
 
 ##### 1. 编译期
@@ -48,3 +29,94 @@ public void start() {
 **堆栈聚类问题**： 如果将收集的原始数据进行上报，数据量很大而且后台很难聚类有问题的堆栈，所以在上报之前需要对采集的数据进行简单的整合及裁剪，并分析出一个能代表卡顿堆栈的 key，方便后台聚合。
 
 通过遍历采集的 buffer ，相邻 i 与 o 为一次完整函数执行，计算出一个调用树及每个函数执行耗时，并对每一级中的一些相同执行函数做聚合，最后通过一个简单策略，分析出主要耗时的那一级函数，作为代表卡顿堆栈的key。 
+
+#### 各类Tracer解析
+
+UIThreadMonitor和LooperMonitor
+
+- LooperMonitor：LooperMonitor通过静态变量monitor来执行初始化，虽然monitor没有被用到，但是会执行构造函数，然后会替换MainLooper中的logging对象（实现Printer类）。而在IdleHandler被调用时也会尝试去替换。替换Logging是为了监控打印的消息。由Looper#loop方法中得知，在dispatchMessage之前，会打印以“>”开头的消息，dispatch之后会打印以“<”开头的消息。而自定义的Presenter类在拿到这两类消息后会分别回调UIMonitor.dispatchBegin和dispatchEnd，以此来表示message处理的开始和结束
+- UIThreadMonitor：在各类tracer#onAlive时，会把自己作为observer加入UIThreadMonitor中，这样dispatchBegin和dispatchEnd就会被通知到各个Tracer
+
+```java
+//TracePlugin.java
+public void init() {
+  //调用AnrTracer、FrameTracer、EvilMethodTracer和StartupTracer的构造方法来初始化对应的field
+}
+public void start() {
+  Runnable runnable = ()->{
+    UIThreadMonitor.getMonitor().init(traceConfig);
+    AppMethodBeat.getInstance().onStart();
+    UIThreadMonitor.getMonitor().onStart();
+    anrTracer.onStartTrace();
+    frameTracer.onStartTrace();
+    evilMethodTracer.onStartTrace();
+    startupTracer.onStartTrace();
+  };
+  //主线程执行上面的runnable
+}
+//UIThreadMonitor.java
+void init(config) {
+  //获取choreographer相关的对象
+  LooperMonitor.register(new LooperMinitor.LooperDispatchListener() {
+    boolean isValid() = true;
+    void dispatchStart() {
+      UIThreadMonitor.this.dispatchBegin();
+    }
+    void dispatchEnd() {
+      UIThreadMonitor.this.dispatchEnd();
+    }
+  });
+}
+//LooperMonitor.java
+void register
+```
+
+##### 1. AnrTracer
+
+AnrTracer的实现关键在于AnrHandleTask。在Looper处理消息时，AnrTracer的dispatchBegin和dispatchEnd会分别触发。其中dispatchBegin时，AnrHandlerTask会延时Constants.DEFAULT_ANR（5s）触发，而dispatchEnd时会移除掉。这样就会造成如果一条消息在DEFAULT_ANR时间内不被处理掉，AnrHandleTask会执行。
+
+```java
+void run() {
+  //这里的处理过程就是上面所说的堆栈聚类问题
+  //然后将处理好的数据上报
+}
+```
+
+##### 2. EvilMethodTracer
+
+EvilMethodTracer是用dispatchBegin和dispatchEnd之间的时间差作为衡量是否上报的条件。当时间差大于evilThresholdMs时，会使用AnalyseTask来上报。AnalyseTask的作用同样是处理堆栈聚类问题，精简上报。
+
+##### 3. StartupTracer
+
+StartupTracer并没有用到dispatchStart/End方法来做计算，而是使用了AppMethodBeat和ActivityLifecycle。在onActivityFocused时，根据firstScreenCost、allCost、isWarmStartup等启动时间信息来处理是否需要上报。其中的关键有下列几点：
+
+- ActivityThreadHacker：ActivityThreadHacker通过反射来hook当前App的ActivityThread中的mH中的mCallback，这样就能监听到handler发送过来的message，以获取对应的时间信息。
+
+  ```java
+  public static void hackSysHandlerCallback() {
+   	sApplicationCreateBeginTime = now;
+    //替换mCallback为HackCallback
+  }
+  class HackCallback implements Handler.Callback {
+    boolean handleMessage(msg) {
+      if(isLaunchActivity(msg)) {
+        ActivityThreadHacker.sLastLaunchACctivityTime = now;
+       	...
+      }
+      if(!isCreated) {
+        if(isLaunchActivity || msg.what == CREATE_SERVICE || msg.what == RECEIVER) {
+          ActivityThreadHacker.sApplicationCreateEndTime = now;
+          ActivityThreadHacker.sApplicationCreateScene = msg.what;
+          isCreated = true;
+        }
+      }
+    }
+  }
+  ```
+
+- AppMethodBeat：AppMethodBeat.realExecute方法负责调用ActivityThreadHack.hack方法，调用的方法为i。i是在UIThreadMonitor.dispatchBegin和在gradle transform任务中对某些方法编译器注入的。
+
+##### 4. FrameTracer
+
+FrameTracer关键在于doFrame方法。doFrame方法在UIThreadMonitor中dispatchEnd中调用。doFrame最后还是触发FPSCollector的doFrameAsync方法
+
