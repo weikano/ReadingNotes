@@ -37,6 +37,7 @@ data class TokenImage(val url:String, val token:String)：Key {
 2. 新增一个解析TokenImage的ModelLoader
 
 ```kotlin
+//更好的方式是继承自BaseGlideUriModel
 class TokenImageModelLoader : ModelLoader<TokenImage, InputStream> {
 	override fun handles(ti:TokenImage) : Boolean = true
   override fun buildLoadData(model:TokenImage, width:Int, height:Int, options:Options):LoadData<InputStream>  {
@@ -55,7 +56,6 @@ class TokenImageModelLoader : ModelLoader<TokenImage, InputStream> {
     val url = model.url +"?token=${model.token}&size=${width}*${height}"
     return GlideUrl(url)
   }
-  
 }
 ```
 
