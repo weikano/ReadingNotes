@@ -1,0 +1,14 @@
+View.post获取尺寸的原理：
+
+1. mAttachInfo不为null，runnable直接交给ViewRootImpl中的mHandler直接处理。mAttachInfo什么时候赋值？通过View.dispatchAttachedToWindow。View.dispatchAttachedToWindow什么时候调用？
+2. mAttachInfo为null，会保存在getRunQueue中，然后通过executeAction方法交给handler处理，而executeActions方法在View.dispatchAttachedWindow中调用。
+
+View.dispatchAttachedToWindow调用时机
+
+1. ViewGroup.addView时会在addViewInner中调用child.dispatchAttachedWindow，而在这之前有调用child.setLayoutParams方法出发parent.requestLayout，最后其实是调用了ViewRootImpl.scheduleTraversal方法进行measure, layout和draw。
+2. ViewRootImpl.host.dispatchAttachedToWindow，即ViewRootImpl.performTraversal中layout之后调用。host是DecorView，也是ViewGroup，其dispatchAttachedToWindow方法会调用child.dispatchAttachedToWindow
+
+
+
+
+
