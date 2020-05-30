@@ -33,6 +33,33 @@ getProduct().postValue();//子线程
 > - onActive:如果之前没有活跃的observer，那么当shouldBeActive()为true时，会触发onActive()
 > - onInactive：当前没有活跃的observer并且shouldBeActive()为false时才会触发
 
+4. MutableLiveData
+
+> `MutableLiveData`就是将`set\postValue`两个方法设置为`public`，`set\postValue`后会回调`obsever.onChanged`方法
+
+4. MediatorLiveData
+
+`MediatorLiveData`类似于`RxJava`中的`combineLatest`，通过`addSource(LiveData, Observer)`将多个`LiveData`的变化通过其对应的`observer`设置给`MediatorLiveData`，然后多个`LiveData`最终的结果合并交给`MediatorLiveData`的`observer`来观察
+
+比如一个购物车需要监控两个商品的数量来计算商品总数，那么就有
+
+```kotlin
+val stock1 = MutableLiveData<Int>()
+val stock2 = MutableLiveData<Int>()
+val merge = MediatorLIveData<Int>()
+merge.addSource(stock1,  { count ->
+  merge.setValue(count + stock2.getValue())
+})
+merge.addSource(stock2, { count->
+  merge.setValue(count + stock1.getValue())
+})
+merge.observe(lifecycle, {vallue ->
+  label.text = "商品数量为$value"
+})
+
+//这样每次stock1、stock2有数据变化时，merge都会收到通知更新界面
+```
+
 #### 三、ViewModel原理
 ```java
 //一般ViewModel类都是继承AndroidViewModel，并设置LiveData field
